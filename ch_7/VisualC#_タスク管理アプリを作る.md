@@ -29,6 +29,14 @@ TOP画面ではタスクID、タスク名、説明、期限が確認できるタ
 
 <br>
 
+### タスク編集画面  
+
+タスク編集画面では、タスク一覧より選択したタスクの編集が可能である。  
+編集項目が完了した後、Saveボタンをクリックすることで、タスク編集画面を終了し、タスク一覧画面に反映する。  
+
+![タスク編集画面](./Resources/タスク編集画面.PNG)  
+
+
 ## Program tips  
 
 <br>
@@ -304,10 +312,6 @@ r.Close();
 コレクションとは、オブジェクトの集合を表す。  
 コレクションを使用するには、```System.Collections```名前空間と```System.Collections.Generic```名前空間を使用する。  
 
-#### ジェネリック構文  
-
-ジェネリックの構文は、汎用的なクラスの扱いを実現するための構文である。  
-
 ```CSharp
 var 変数名 = new コレクション名<要素の型>();
 ```  
@@ -317,6 +321,9 @@ var 変数名 = new コレクション名<要素の型>();
 ```CSharp
 var list = new List<string>();
 ```  
+
+<br>
+<br>
 
 #### List  
 
@@ -347,9 +354,216 @@ strings.Add("fff");
 
 さらに、```List```型を使用する事で、配列にはなかった様々な機能を使用することができる。  
 
-Listへのアクセスは、配列と同じように行う。
-
 ```CSharp
-strings[1];     // bbb
+// Listへのアクセスは、配列と同じように行う。
+Console.WriteLine(strings[1]);     // bbb
+
+// 配列同様、foreach構文で要素を１つずつ取り出せる
+foreach(var data in strings)
+{
+    Console.WriteLine(data)         // aaa
+}                                   // bbb
+                                    // ...
+
+// データの数の取得も配列と同じ
+Console.WriteLine(strings.Count);   // 6
 ```  
 
+<br>
+
+***テスト***  
+上記で作成したJsonファイルの読み込みプログラムにて、Jsonに記述されているデータの数を10個に増やし、その中で完了していないタスクの名前を表示するプログラム。  
+
+<br>
+<br>
+
+#### Dictionary
+
+コレクション型には、他にもQueue型やDictionary型などが存在するが、その中でも使用頻度の高い、ディクショナリ型について紹介する。  
+コレクション型の詳細は以下を参照。  
+https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/collections  
+
+ディクショナリは、一意のキーと値のペアで管理されるデータ構造である。  
+ディクショナリの宣言方法(インスタンス初期化)は以下。  
+
+```CSharp
+Dictionary<[キーの型], [値の型]> data = new Dictionary<[キーの型], [値の型]>();
+```  
+
+ディクショナリの基本的な操作方法は以下。  
+
+```CSharp
+// ディクショナリの宣言
+var dic = new Dictionary<string, int>();
+
+// ディクショナリに値を追加する
+dic.Add("いち", 1);
+dic.Add("に", 2);
+dic.Add("さん", 3);
+
+// ディクショナリの値にアクセスする
+Console.WriteLine(dic["に"]);       // 2
+
+// ディクショナリの値を更新する
+dic["さん"] = 30;
+Console.WriteLine(dic["さん"]);     // 30
+
+// ディクショナリのキー値を順番に取得する
+var keys = dic.Keys;
+foreach(var key in keys)
+{                                   // いち
+    Console.WriteLine(key);         // に
+}                                   // さん
+
+// つまり、値を順番に取得したければ
+var keys = dic.Keys;
+foreach(var key in keys)
+{                                   // 1
+    Console.WriteLine([key]);       // 2
+}                                   // 3
+
+// ディクショナリにキーが含まれているか確認する
+// 以下は、任意のキーが含まれている場合は上書きし、含まれていなければ新たに追加するプログラムである
+if(dic.ContainsKey("よん"))
+{
+    dic["よん"] = 400;
+}
+else
+{
+    dic.Add("よん", 400);
+}
+```
+
+***※ディクショナリはキーの順番は保証されていないので注意***  
+
+<br>
+
+***テスト***  
+
+3人分のユーザ名とパスワードを登録し、ディクショナリで保持し、そのうちのいずれかのユーザ名とパスワードを使ってログインするプログラム。  
+
+<br>
+<br>
+
+### ジェネリック型  
+
+ジェネリックは、汎用的な(任意の型を受け付ける)クラス、メソッドに対して、特定の処理を行えるようにする機能である。  
+
+<br>
+
+#### ジェネリックメソッド  
+
+ジェネリックメソッドでは、引数の数やデータ型、戻り値の型を指定して定義できる。  
+
+例えば、値を2つ受け付け、大きい方の値を返す関数があったとする。  
+
+```CSharp
+int Max(int x, int y)
+{
+    return x > y ? x : y;
+}
+```  
+
+しかし、この関数の小数版が必要になったとする。上記のMax関数は、int型で受け付けてint型を返すように定義されているため、内容は同じだが型の違う関数をもう１つ作成する必要がある。  
+
+```CSharp
+int Max(int x, int y)
+{
+    return x > y ? x : y;
+}
+
+double Max(double x, double y)
+{
+    return x > y ? x : y;
+}
+```  
+
+このように、処理は同じなのに、型が違うだけで同じ関数を２つ用意する必要が出てしまう。  
+そこで、ジェネリックメソッドを使うことでこのような冗長性をなくすことができる。  
+
+```CSharp
+T Max<T>(T x, T y) where T : IComparable
+{
+    return x.CompareTo(y) > 0 ? x : y;
+}
+```  
+
+ここで使用している```T```はすべて同じ型になる。  
+また、```where T :```は***ジェネリック型制約***といって、型引数がどのような機能を持っているかを指定する。  
+型制約がなければ、Ｔに何の型を指定されるかわからないため、もし比較演算子が使えない型を入れる事もできる。(Max<Console, string>(xxx, yyy)など)  
+そこで、この関数に指定できる型の性質を指定できるようにしているのが、ジェネリック型制約である。  
+例の場合は、```IComparable```を指定する事で、比較可能である型のみ指定できるような制約を付与している。  
+この場合は、```IComparable```を継承している型しか受け付けなくなる。  
+詳細は割愛するが、型制約の種類の詳細は以下を参照する。  
+https://docs.microsoft.com/ja-jp/dotnet/csharp/language-reference/keywords/where-generic-type-constraint  
+
+<br>
+
+この関数を呼び出すには、以下のようにすれば良い。  
+
+```CSharp
+Max<int>(3, 5);             // 5
+Max<double>(2.5, 5.1);      // 5.1
+```  
+
+また、型引数はいくつでも追加できる。  
+
+```CSharp
+T1 method<T1, T2>(T1 x, T2 y)
+{
+    return x;
+}
+
+method<int, string>(3, "aaa");
+```
+
+***テスト***  
+
+- ジェネリックメソッドを使って、引数として渡された値の型を表示する。  
+型は変数.GetType()で取得できる。  
+
+<br>
+<br>
+
+#### ジェネリッククラス  
+
+ジェネリックはクラスにも適用できる。  
+
+```CSharp
+class Test<T> where T : struct
+{
+    T x;
+    T y;
+
+    public Test(T x, T y)
+    {
+        this.x = x;
+        this.y = y;
+    }
+
+    public void Method()
+    {
+        Console.WriteLine(x);
+        Console.WriteLine(y);
+    }
+}
+
+static void Main(string[] args)
+{
+    Test<int> t = new Test<int>(1, 2);
+    t.Method();
+
+    Console.ReadLine();
+}
+```  
+
+このクラスは、指定された型のメンバ変数xとyをコンストラクタの引数として受け取り、Method関数で出力するプログラムである。  
+
+***テスト***  
+
+上記のクラスをdouble型を指定して実行してみる。  
+
+<br>
+<br>
+
+### ラムダ式
