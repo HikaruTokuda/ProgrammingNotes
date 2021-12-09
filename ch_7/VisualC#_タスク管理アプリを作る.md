@@ -4,9 +4,7 @@
 
 タスク名、概要、期限、完了フラグをトップページでリスト表示する。  
 そのうち、完了タスクは背景色をグレイアウトする。  
-これらのタスクは、削除、追加、編集が可能で、タスクリストの各行にはチェックボックスを設け、複数タスクの一括削除を可能とする。  
-
-
+これらのタスクは、削除、追加、編集、完了、未完了が変更可能で、タスクリストの各行にはチェックボックスを設け、複数タスクの一括削除、一括完了化、一括未完了化を可能とする。  
 
 ## 画面仕様  
 
@@ -36,6 +34,43 @@ TOP画面ではタスクID、タスク名、説明、期限が確認できるタ
 
 ![タスク編集画面](./Resources/タスク編集画面.PNG)  
 
+<br>
+
+## 処理詳細  
+
+<br>
+
+### クラス一覧  
+
+本アプリケーションで使用するクラスは以下。  
+
+| クラス名   |     概要      |
+| --- | ----------- |
+|  Top   | Top画面クラス |
+| IniFileService    | Iniファイルの読み込みを行う |
+| TasksDto    | JSONファイルからTaskクラス一覧を格納するためのクラス |
+| Task    | タスククラス。<br>id, taskName, dscription, dueDate, isDoneを持っている |
+| TaskService    | Task一覧を管理するクラス |
+| AddTask    | Task編集画面および、Task追加画面クラス |
+
+<br>
+
+### 初期化処理
+
+TOP画面の初期化時に、Iniファイルの格納場所を指定して```IniFileService```にてIniファイルを読み込む。  
+Iniファイルにはタスクファイル(JSON)の格納場所が記述してあり、取得したIniファイルの内容から、```TaskService```にてタスクファイルを読み込む。  
+```TaskService```では、タスクファイルから読み込んだタスク一覧を```TasksDto```として保持する。  
+
+![初期化処理1](./Resources/初期化処理1.PNG)  
+
+***各種ファイルの読み込みは以下のパッケージを用いる***  
+
+- Iniファイルの読み込みは[INI File Parser](https://github.com/rickyah/ini-parser)を用いる。  
+- JSONファイルの読み込みには、[Newtonsoft](https://www.newtonsoft.com/json)を用いる。  
+
+また、画面のロードイベントを追加し、```TaskService```が保持しているタスク一覧より、画面に表示するタスクリストコントローラーを生成する。  
+
+![Top画面ロード](./Resources/Top画面ロード.PNG)  
 
 ## Program tips  
 
@@ -566,4 +601,254 @@ static void Main(string[] args)
 <br>
 <br>
 
-### ラムダ式
+### ラムダ式  
+
+<br>
+
+#### デリゲート  
+
+デリゲート型は、関数を変数に格納できる仕組み。  
+デリゲート型はクラスのように宣言する。  
+
+```CSharp
+delegate 戻り値の型 デリゲート型名(引数);
+```  
+
+デリゲート型を使用する時は、デリゲート型の戻り値と引数が同じ担っている関数を```new```の際に指定することで、指定した関数が格納される。  
+以下のプログラムは戻り値voidで引数がint型の値1個を持つデリゲート型を定義し、Programクラス内で同じ型、同じ引数の関数をデリゲートとして使用する事で、デリゲート名に引数を渡す形で使用している。  
+
+```CSharp
+// デリゲート型の定義
+delegate void someDelegate(int a);
+
+class Program
+{
+    static void Main(string[] args)
+    {
+        // デリゲート型の変数を用意。
+        // インスタンス生成時に代入する関数を指定
+        someDelegate someDelegate = new someDelegate(SomeDelegateMethod);
+        // デリゲート名で呼び出し
+        someDelegate(100);
+    }
+
+    // デリゲートに格納する関数
+    static void SomeDelegateMethod(int data)
+    {
+        Console.WriteLine($"SomeDelegateMethod({data})が呼ばれました。");
+    }
+}
+```  
+
+デリゲートには複数のメソッドを代入することができる。  
+代入には```+=```演算子を使う。  
+以下は```someDelegate```型に```SomeDelegateMethod```、```SomeDelegateMethod2```、```SomeDelegateMethod3```メソッドを代入することで、```someDelegate(100);```で呼び出した際に追加した３つのメソッドが全て呼び出されている。  
+
+```CSharp
+delegate void someDelegate(int a);
+
+class Program
+{
+    static void Main(string[] args)
+    {
+        someDelegate someDelegate = new someDelegate(SomeDelegateMethod);
+        someDelegate += new someDelegate(SomeDelegateMethod2);
+        someDelegate += new someDelegate(SomeDelegateMethod3);
+        someDelegate(100);
+    }
+
+    static void SomeDelegateMethod(int data)
+    {
+        Console.WriteLine($"SomeDelegateMethod({data})が呼ばれました。");
+    }
+
+    static void SomeDelegateMethod2(int data)
+    {
+        Console.WriteLine($"SomeDelegateMethod2({data})が呼ばれました。");
+    }
+
+    static void SomeDelegateMethod3(int data)
+    {
+        Console.WriteLine($"SomeDelegateMethod3({data})が呼ばれました。");
+    }
+}
+/*
+SomeDelegateMethod(100)が呼ばれました。
+SomeDelegateMethod2(100)が呼ばれました。
+SomeDelegateMethod3(100)が呼ばれました。
+*/
+```  
+
+***テスト***  
+ユーザが名前を入力すると、以下のテーブルより名前を探し、テーブルに名前がある場合は、「こんにちは、○○さん」「出席番号は〇番です」
+「○○からようこそ」を表示するプログラム。  
+※ただし、「こんにちは、○○さん」「出席番号は〇番です」
+「○○からようこそ」はそれぞれ別の関数で表示すること。  
+
+| 出席番号   |     名前      |　出身  |
+| --- | ----------- | --- |
+| 1    | 山田太郎 | 滋賀 |
+| 2    | 高木次郎 | 京都 |
+| 3    | 鈴木三郎 | 大阪 |
+| 4    | 田中花子 | 奈良 |
+| 5    | 石田森子 | 兵庫 |  
+
+<br>
+
+#### ラムダ式  
+
+delegateでは、delegateの型に合った関数を定義し代入する、という方法が取られていたが、毎回delegate型を定義して関数を増やしていてはコードがどんどん大きくなってしまう。  
+
+そこで、もっと手軽に関数を定義し呼び出せる形にしたものがラムダ式である。  
+
+```CSharp
+(引数) => { 処理 };
+```
+
+例えば、ラムダ式を使ってある数が10より大きいかどうかを判定する処理は以下のように記述する。  
+
+```CSharp
+(int n) => { return n > 10; };
+```  
+
+例えば、以下のようなdelegateが定義されている場合、それに代入するラムダ式は以下のように記述できる。  
+
+```CSharp
+delegate bool Pred(int n);
+
+Pred p = (int n) => { return n > 10; };
+```  
+
+***テスト***  
+delegateのときに書いたプログラムをラムダ式を使って書き直す。  
+
+<br>
+
+#### FuncとAction  
+
+デリゲートは、デリゲート型を定義する必要があるが、必要な処理が追加されるたびにデリゲート型を宣言するのは冗長である。  
+そこで、デリゲート型の宣言を不要にしたものがFunc型とAction型である。  
+
+***Action***型は戻り値がvoid型の処理を、***Func***型は戻り値のある処理を宣言できる。  
+
+```CSharp
+Func<引数1の型, 引数2の型, 引数3の型..., 戻り値の型>
+Action<引数1の型, 引数2の型, 引数3の型...>
+```  
+
+以下は、```GetRightStr```と```GetLeftStr```をそれぞれFuncを用いて変数に格納して呼び出している例である。
+
+```CSharp
+static void Main(string[] args)
+{
+    string str = "This is a pen.";
+    int len = 4;
+
+    Func<string, int, string> func = GetLeftStr; 
+    Console.WriteLine($"左から{len}文字: {func(str, len)}");
+
+    func = GetRightStr; 
+    Console.WriteLine($"右から{len}文字: {func(str, len)}");
+}
+
+static string GetLeftStr(string str, int len)
+{
+    string ret = str.Substring(0, len);
+    return ret;
+}
+
+static string GetRightStr(string str, int len)
+{
+    int startIndex = str.Length - len;
+
+    string ret = str.Substring(startIndex, len);
+    return ret;
+}
+```  
+
+また、ラムダ式を用いてFuncまたはActionに渡す事も可能である。  
+以下は、```Person```クラスにおいて、```Action```型のメンバ変数を保持し、```DoAction```関数にてその関数を呼び出している。  
+こうすることで、```Person```クラスの```DoAction```関数を実行した時の処理内容を```Person```クラスの外で定義することができる。  
+
+```CSharp  
+public class Person
+{
+    public string Name { get; set; }
+    public int Age { get; set; }
+    public string Country { get; set; }
+
+    public Action<string> action { get; set; }
+
+    public void DoAction()
+    {
+        action("Jump");
+    }
+}
+
+class Program
+{
+    static void Main(string[] args)
+    {
+        Person john = new Person();
+        john.Name = "John";
+        john.Age = 18;
+        john.Country = "US";
+        john.action = (string actionString) =>
+        {
+            Console.WriteLine($"Hi, I'm {john.Name}. I'm good at {actionString}.");
+        };
+
+        Person tokuda = new Person();
+        tokuda.Name = "Tokuda";
+        tokuda.Age = 30;
+        tokuda.Country = "JP";
+        tokuda.action = (string actionString) =>
+        {
+            Console.WriteLine($"こんにちは、 {tokuda.Name}です。 私は {actionString}が得意です。");
+        };
+
+        john.DoAction();
+        tokuda.DoAction();
+    }
+
+```
+
+***テスト***  
+
+- これまで書いたプログラムをFuncまたはActionを使った形に変更する。  
+
+- 上記のPersonクラスにモーニングルーチンを格納するメンバ変数を追加し、それらを順に実行するようにしたい。  
+<<ヒント>>  
+
+1. PersonクラスにAction型のListを作成するとともに、モーニングルーチンを順に実行する関数を用意する。  
+この時のAction型はstring型の引数を取るようにしておく。  
+2. Main関数でPersonクラスのインスタンスを生成した後、モーニングルーチンを格納するためのListをインスタンス化する。インスタンス化したリストのAdd関数にモーニングルーチンを```Console.WriteLine()```するラムダ式を指定する。  
+3. 最後に、生成したPersonクラスのモーニングルーチンを順に実行する関数を実行する。  
+
+<br>
+<br>
+
+### 匿名型  
+
+匿名型はclass定義をその場で簡易的に定義できる構文である。  
+
+```CSharp
+var person = new { Name = "Taro", Id = 0};
+Console.WriteLine(person.Name);     // Taro
+Console.WriteLine(person.Id);       // 0
+```  
+
+その場でしか使わないが、その場ではクラスとして使用したいようなプログラムがある場面で、ファイルを作成してクラスを記述して、、、は面倒である。そのような場面で、その場で使う共通のクラスを匿名型として記述したりする。  
+
+***テスト***  
+以下の生徒テーブルを匿名型でリストとして作成し、全生徒の出席番号、名前、出身地をそれぞれ表示するプログラムを作成する。  
+
+| 出席番号   |     名前      |　出身  |
+| --- | ----------- | --- |
+| 1    | 山田太郎 | 滋賀 |
+| 2    | 高木次郎 | 京都 |
+| 3    | 鈴木三郎 | 大阪 |
+| 4    | 田中花子 | 奈良 |
+| 5    | 石田森子 | 兵庫 |  
+
+
