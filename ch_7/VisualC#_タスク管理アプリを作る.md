@@ -851,4 +851,63 @@ Console.WriteLine(person.Id);       // 0
 | 4    | 田中花子 | 奈良 |
 | 5    | 石田森子 | 兵庫 |  
 
+<br>
 
+### DateTime型について  
+
+DateTime型は日時を扱うための型で、様々な使い方がある。  
+
+<br>
+
+#### 現在時刻を取得する  
+
+DateTime型を使って現在時刻を取得するには以下のように記述する。  
+
+```CSharp
+DateTime dt = DateTime.Now;
+Console.WriteLine(dt);      // 2018/05/04 15:25:39
+```
+
+<br>
+
+#### ToStringで日時(日付)を文字列に変換する  
+
+DateTimeの日時をフォーマットを指定して文字列に変換するには、ToStringメソッドの引数にフォーマットを指定する。年月日は「yyyy/MM/dd」のように指定する。日時は「HH:mm:ss」のように指定する。  
+
+```CSharp
+DateTime dt = DateTime.Now;
+
+string result = dt.ToString("yyyy/MM/dd HH:mm:ss");
+Console.WriteLine(result);
+
+result = dt.ToString("yyyy年MM月dd日 HH時mm分ss秒");
+Console.WriteLine(result);
+
+// 2018/04/26 17:33:55
+// 2018年04月26日 17時33分55秒
+```  
+
+<br>
+
+#### 日時の文字列をDateTimeに変換する方法  
+
+Parseメソッドは日時の文字列をDateTime型に変換して戻り値として返す。  
+
+```CSharp
+string strTime = "2018/05/01 12:34:56";
+
+DateTime dTime = DateTime.Parse(strTime);
+Console.WriteLine(dTime);
+
+strTime = "2018/05/01";
+dTime = DateTime.Parse(strTime);
+Console.WriteLine(dTime);
+
+strTime = "12:34:56";
+dTime = DateTime.Parse(strTime);
+Console.WriteLine(dTime);
+
+// 2018/05/01 12:34:56
+// 2018/05/01 0:00:00
+// 2018/05/04 12:34:56
+```  
