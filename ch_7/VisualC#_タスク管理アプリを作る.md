@@ -927,3 +927,151 @@ Console.WriteLine(dTime);
 // 2018/05/01 0:00:00
 // 2018/05/04 12:34:56
 ```  
+
+### 例外処理  
+
+例外処理は、コンパイルは通るけど実行時にクラッシュするような処理をクラッシュする前に拾ってくれる。  
+例えば、以下の処理はユーザが数値を入力した場合はうまくいくが、
+
+```CSharp
+Console.WriteLine("Please input num");
+string inputValStr = Console.ReadLine();
+int inputVal = int.Parse(inputValStr);
+Console.WriteLine($"Input num + 1 = {inputVal + 1}");
+Console.ReadLine();
+```  
+
+![例外処理1.PNG](Resources/例外処理1.PNG)  
+
+数値に変換できないような値が入力されたときはクラッシュする。  
+
+![例外処理2.PNG](Resources/例外処理2.PNG)  
+
+![例外処理3.PNG](Resources/例外処理3.PNG)  
+
+この処理は、実行するとクラッシュするが、コンパイルは通ってしまう。  
+このような予期せぬクラッシュを防ぐための処理が例外処理である。  
+
+***構文***
+
+```CSharp
+try
+{
+    // 例外を拾いたい処理
+}
+catch (Exception ex)
+{
+    // 例外が発生したときに実行する処理
+}
+```  
+
+先程のコードに例外処理を組み込む場合、以下のようなコードになる。  
+
+```CSharp
+Console.WriteLine("Please input num");
+string inputValStr = Console.ReadLine();
+try
+{
+    int inputVal = int.Parse(inputValStr);
+    Console.WriteLine($"Input num + 1 = {inputVal + 1}");
+}
+catch (Exception ex)
+{
+    Console.WriteLine(ex.Message);
+} 
+```  
+
+こうすることで、クラッシュせずに実行できる。  
+
+![例外処理4.PNG](Resources/例外処理4.PNG)  
+
+例外を拾った際、```catch (Exception ex)```の```ex```に例外内容が格納される。  
+例外内容を出力したい場合は、```ex.Message```で確認できる。  
+
+#### 例外処理の種類  
+
+例外の種類は、多岐に渡る。例外の種類はそれぞれクラスが用意されており、```Exception```クラスは、その基底クラスにあたる。  
+
+[Exception Class](https://docs.microsoft.com/en-us/dotnet/api/system.exception?view=net-6.0)  
+
+今回は、```catch (Exception ex)```で```Exception```クラスを拾っているので、全ての例外を拾うようにしているが、  
+例外の種類によって実行する処理を分けることもできる。  
+
+```CSharp
+WebClient wc = null;
+try
+{
+   wc = new WebClient(); //downloading a web page
+   var resultData = wc.DownloadString("http://google.com");
+}
+catch (ArgumentNullException ex)
+{
+   //code specifically for a ArgumentNullException
+}
+catch (WebException ex)
+{
+   //code specifically for a WebException
+}
+catch (Exception ex)
+{
+   //code for any other type of exception
+}
+```  
+
+#### finally  
+
+上記のように処理を実行した後、必ず実行する処理を記述するには、```finally```キーワードを使用する。  
+
+```CSharp
+WebClient wc = null;
+try
+{
+   wc = new WebClient(); //downloading a web page
+   var resultData = wc.DownloadString("http://google.com");
+}
+catch (ArgumentNullException ex)
+{
+   //code specifically for a ArgumentNullException
+}
+catch (WebException ex)
+{
+   //code specifically for a WebException
+}
+catch (Exception ex)
+{
+   //code for any other type of exception
+}
+finally
+{
+   //call this if exception occurs or not
+   //in this example, dispose the WebClient
+   wc?.Dispose();
+} 
+```  
+
+こうすることで、```ArgumentNullException```、```WebException```、```Exception```のいずれかを拾ったとしても必ず```wc?.Dispose();```が実行される。  
+
+#### 例外を発生させる  
+
+例外は、アプリがクラッシュする場合でなくとも故意に発生させることができる。  
+例外を発生させたい場合は、```throw```キーワードを記述する。  
+先程のコードで、例外が発生しない場合でも例外を発生させてみる。  
+
+```CSharp
+Console.WriteLine("Please input num");
+string inputValStr = Console.ReadLine();
+try
+{
+    int inputVal = int.Parse(inputValStr);
+    Console.WriteLine($"Input num + 1 = {inputVal + 1}");
+    throw new Exception("例外を発生させました。");
+}
+catch (Exception ex)
+{
+    Console.WriteLine(ex.Message);
+}
+```  
+
+![例外処理5.PNG](Resources/例外処理5.PNG)  
+
+先程までであれば、"2"はパース可能であるため、例外は発生しないはずであるが、"例外を発生させました"という出力は、```throw new Exception("例外を発生させました。");```を```catch (Exception ex)```で拾って```Console.WriteLine(ex.Message);```で出力している。  
